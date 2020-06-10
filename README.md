@@ -78,7 +78,7 @@ thinkcmf  根目录
 ~~~
 ## 如果没有独立开发能力，可联系我wx：719362307
 ### 对外提供服务版本
- wtj.dwtongji.com   
+http://wtj.dwtongji.com/ 
 
 
 
