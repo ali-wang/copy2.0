@@ -1,0 +1,174 @@
+<include file="public@myheader" />
+
+
+<style>
+
+    .row{margin: 0px; width: 100%;}
+    .mt20{ margin-top:20px;}
+    .font{ font-size: 1.5rem;line-height: 3rem;}
+</style>
+</head>
+<body>
+
+
+
+<!--    <h2>查询下载数据</h2>-->
+
+<form>
+    <div class="row mt20">
+
+        <div class="col-xs-1 text-center" style="font-size: 1.5rem; line-height: 3.0rem;">选择</div>
+
+        <div class="col-xs-4">
+            <select name="app_url" class="layui-input-inline layui-input" id="url" style="width: 100%;">
+                <option value="0">选择一个网站</option>
+
+                <volist name="url" id='vo'>
+                    <option value="{$vo}">{$vo}</option>
+                </volist>
+
+            </select>
+        </div>
+
+<!--        <div class="col-xs-4">-->
+<!--            <div class="layui-input-inline" style="width: 100%;">-->
+<!--                <input autocomplete="off" type="text" name="time" class="layui-input" id="test10"-->
+<!--                       value="" placeholder="yyyy-MM-dd HH:mm- yyyy-MM-dd HH:mm">-->
+<!--                &lt;!&ndash; <input type="hidden" name="choose_time" value="" id="choose_time"> &ndash;&gt;-->
+<!--            </div>-->
+<!--        </div>-->
+
+        <input class="col-xs-2  btn btn-info" style="line-height: 24px;" type="" id="search" value="查询">
+
+    </div>
+</form>
+
+
+<table id="demo" lay-filter="demo"></table>
+
+
+
+<div class="container" id="app" style="margin-top: 30px; display: block;">
+
+</div>
+
+<!--    <div style="width: 98%; margin: 0 auto;"> <table class="layui-hide" id="test" lay-filter="test"></table></div>-->
+
+
+<script>
+
+
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('main'));
+    // 绘制图表
+    myChart.setOption({
+    title: {
+    text: 'ECharts 入门示例'
+    },
+    tooltip: {},
+    xAxis: {
+    data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+    },
+    yAxis: {},
+    series: [{
+    name: '销量',
+    type: 'bar',
+    data: [5, 20, 36, 10, 10, 20]
+    }]
+    });
+</script>
+
+
+
+
+
+<script src="__STATIC__/layui/layui.js"></script>
+
+<script>
+
+    function ali_ajax(url_time){
+        var result ='';
+        $.ajax({
+            url: 'wx_times',
+            type: 'POST',
+            datatype: 'json',
+            async : false,
+            data: url_time,
+            success:function(res){
+                // console.log(res);
+                result = res.data;
+            }
+        });
+        return result;
+    };
+
+
+
+    layui.use(['laydate','table'],function () {
+        var laydate=layui.laydate;
+        var table = layui.table;
+        //日期时间范围
+        laydate.render({
+            elem: '#test10'
+            ,type: 'datetime'
+            ,range: true
+            ,min: -28 //7天前
+            ,max: 1 //7天后
+            ,done:function (value,date,endDate) {
+                $('#choose_time').val(value);
+                // console.log(value); //得到日期生成的值，如：2017-08-18
+                // console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
+                // console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
+            }
+        });
+
+        $('#search').click(function(event) {
+            var arr={};
+            arr.app_url = $('#url').val();
+            if(arr.app_url == '0'){
+                layer.alert('请选择要查询的链接', {
+                    skin: 'layui-layer-molv' //样式类名
+                    ,closeBtn: 0
+                });
+                return;
+            }
+            arr.time = $('#test10').val();
+            // var abc = ali_ajax(arr);
+            // console.log(abc);
+            //第一个实例
+            table.render({
+                elem: '#demo'
+                ,method:'post'
+                ,url:'nowtimes'
+                ,where:arr
+                ,page: true //开启分页
+                ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+                ,title: '微信复制次数'
+                ,cols: [[ //表头
+                    // {type: 'numbers', title: 'ID', width:80, fixed: 'left'}
+                    {field: 'wlocation', title: '当前URL', width:200}
+                    ,{field: 'wform', title: '来源链接', width:200}
+                    ,{field: 'wsouword', title: '搜索词', width:200}
+                    ,{field: 'wuser_ip', title: '用户ip', width:200}
+                    ,{field: 'wregion', title: '省份', width:200}
+                    ,{field: 'wcity', title: '城市', width:200}
+                    ,{field: 'wtime', title: '时间', width:200}
+
+
+                ]]
+                ,page: true
+            });
+
+
+        });
+
+
+
+
+    });
+
+
+</script>
+
+</body>
+</html>

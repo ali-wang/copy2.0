@@ -1,0 +1,242 @@
+<include file="public@myheader" />
+
+<style>
+
+    .row{margin: 0px; width: 100%;}
+    .mt20{ margin-top:20px;}
+    .font{ font-size: 1.5rem;line-height: 3rem;}
+</style>
+</head>
+<body>
+
+    <div class="container">
+
+    </div>
+
+    
+
+    <div style="width: 98%; margin: 0 auto;"> <table class="layui-hide" id="test" lay-filter="test"></table></div>
+
+
+
+
+    <script type="text/html" id="barDemo">
+        <!-- <a class="layui-btn layui-btn-danger layui-btn-xs layui-btn-radius" lay-event="del">删除</a> -->
+        <a class="layui-btn layui-btn-normal layui-btn-xs layui-btn-radius" lay-event="exchange">修改</a>
+    </script>
+
+
+    <script type="text/html" id="usertype">
+        {{#  if(d.user_type == 2){ }}
+        <a class="layui-btn layui-btn-xs">点击</a>
+        {{#  } else { }}
+        <a class="layui-btn layui-btn-normal layui-btn-xs">复制</a>
+        {{#  } }}
+    </script>
+
+
+
+    <script src="__STATIC__/layui/layui.js"></script>
+
+    <script>
+
+        layui.use(['laydate','table'],function () {
+            var laydate=layui.laydate;
+            var table = layui.table;
+            //日期时间范围
+            laydate.render({
+                elem: '#test10'
+                ,type: 'datetime'
+                ,range: true
+                ,min: -28 //7天前
+                ,max: 1 //7天后
+                ,done:function (value,date,endDate) {
+                    console.log(value); //得到日期生成的值，如：2017-08-18
+                    console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
+                    console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
+                }
+            });
+
+            table.render({
+                elem: '#test'
+                ,url:'showdata_index'
+                ,where: {id: 123}
+                ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+                ,limit:20
+                ,method:'post'
+                ,title: '用户数据表'
+                ,cols: [[
+                    {field:'id', title:'ID', width:80, fixed: 'left', unresize: true, sort: true,hide:false}
+                    ,{field:'user_login', title:'用户名', width:210}
+                    ,{field:'btime', title:'开始时间', width:210}
+                    ,{field:'etime', title:'结束时间', width:210}
+                    ,{field:'donum', title:'域名个数', width:210}
+                    ,{field:'domain', title:'授权域名'}
+                   
+                    ,{fixed: 'right', title:'操作', toolbar: '#barDemo', width:150}
+                ]]
+                ,page: true
+            });
+
+            //监听行工具事件
+            table.on('tool(test)', function(obj){
+                var data = obj.data;
+                //console.log(obj)
+                if(obj.event === 'del'){
+                    layer.confirm('真的删除该条数据吗？', function(index){
+                        console.log(obj.data.id);
+                        var id = obj.data.id;
+                       $.ajax({
+                           url: '../admin_deledata/showdata_del',
+                           type: 'POST',
+                           datatype: 'json',
+                           data: {'id': id},
+                           success:function(msg){
+                               if(msg.msg){
+                                   obj.del();
+                                   layer.close(index);
+                                   layer.open({
+                                       title: 'message'
+                                       ,content: '删除成功'
+                                       ,anim: 4
+                                       ,time:1000
+                                   });
+                               }else{
+                                   layer.open({
+                                       title: 'message'
+                                       ,content: '删除失败'
+                                       ,anim: 6
+                                       ,time:1000
+                                   });
+                               }
+
+                           }
+                       })
+                    });
+                }
+
+                 if(obj.event === 'exchange'){
+                
+                      layer.open({
+                        type: 1,
+                        skin: 'layui-layer-rim', //加上边框
+                        area: ['420px', '300px'], //宽高
+                        anim: 1,
+                        content: $('#foren'),
+                        success: function(layero, index){
+                          // console.log(layero, index);
+                          $('#ids').val(obj.data.id);
+                          $('#num').val(obj.data.donum);
+                          $('#dates').val(obj.data.etime);
+                          $('#btime').val(obj.data.btime);
+                        } 
+                       
+                      });
+                  }
+
+
+
+
+            });
+
+        });
+    </script>
+
+    <!-- 修改弹窗-->
+<style>
+.layui-inline{width:100%;}
+.layui-form-label{ width:100px; }
+#foren{ display:none; }
+</style>
+<div id="foren">
+  <form  class="layui-form">
+
+    <div class="layui-inline" style="margin:15px auto">
+      <label class="layui-form-label">开始时间</label>
+      <div class="layui-input-inline">
+         <input type="text" name="btime" class="layui-input" id="btime" readonly="" placeholder="yyyy-MM-dd">
+      </div>
+    </div>
+
+    <div class="layui-inline" style="margin:15px auto">
+      <label class="layui-form-label">结束日期</label>
+      <input type="hidden" name="id" id="ids" >
+      <div class="layui-input-inline">
+        <input type="text" name="etime" id="dates" lay-verify="dates" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input" lay-key="1">
+      </div>
+    </div>
+
+    <div class="layui-inline">
+      <label class="layui-form-label">域名个数</label>
+      <div class="layui-input-inline">
+        <input type="text" name="num"  id='num' lay-verify="num" autocomplete="off" class="layui-input">
+      </div>
+    </div>
+
+    <a class="layui-btn layui-btn-normal layui-col-md-offset1" lay-submit lay-filter="formDemo">确定</a>
+
+
+  </form>
+</div>
+
+<script>
+    layui.use(['laydate','form','layer'], function(){
+      var laydate = layui.laydate;
+      var form = layui.form;
+      var layer = layui.layer;
+      //执行一个laydate实例
+      laydate.render({
+        elem: '#dates'
+        ,type: 'datetime'//指定元素
+      });
+
+      laydate.render({
+        elem: '#btime'
+        ,type: 'datetime'//指定元素
+       
+      });
+
+      //  laydate.render({
+      //   elem: '#dates_1'
+      //   ,type: 'datetime'//指定元素
+      // });
+
+
+
+      //监听提交
+      form.on('submit(formDemo)', function(data){
+        let datas = JSON.stringify(data.field);
+        // layer.msg(datas);
+
+        $.ajax({
+          url: 'changedata',
+          type: 'POST',
+          dataType: 'json',
+          data: data.field,
+          success:function(msg){
+            console.log(msg);
+              if(msg){
+                layer.msg('修改成功', {icon: 1,time: 1000},function(){
+                  layer.closeAll();
+                   window.location.reload();
+                });
+              }else{
+                 layer.msg('修改失败', {icon: 5,time: 1000},function(){
+                  layer.closeAll();
+                });
+
+              }
+          }
+        });
+        
+        
+
+
+        // return false;
+      });
+
+    });
+</script>
+
+</body>
+</html>

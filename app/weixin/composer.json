@@ -1,0 +1,15 @@
+{
+    "name": "thinkcmf/wx-demo",
+    "description": "weixin show  exchange",
+    "type": "cmf-api",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "alile",
+            "email": "719362307@qq.com"
+        }
+    ],
+    "require": {
+        "xaboy/form-builder": "^2.0"
+    }
+}

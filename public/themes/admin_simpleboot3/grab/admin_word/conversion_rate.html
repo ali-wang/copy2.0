@@ -1,0 +1,198 @@
+<include file="public@myheader" />
+
+
+<style>
+
+    .row{margin: 0px; width: 100%;}
+    .mt20{ margin-top:20px;}
+    .font{ font-size: 1.5rem;line-height: 3rem;}
+</style>
+</head>
+<body>
+
+
+
+<!--    <h2>查询下载数据</h2>-->
+
+    <form>
+        <div class="row mt20">
+
+            <div class="col-xs-1 text-center" style="font-size: 1.5rem; line-height: 3.0rem;">选择</div>
+            <div class="col-xs-4">
+                <div class="layui-input-inline" style="width: 100%;">
+                    <input autocomplete="off" type="text" name="time" class="layui-input" id="test10"
+                          value="" placeholder="yyyy-MM-dd HH:mm- yyyy-MM-dd HH:mm">
+                  
+                </div>
+            </div>
+
+            <input class="col-xs-2  btn btn-info" style="line-height: 24px;" type="" id="search" value="查询">
+
+        </div>
+    </form>
+
+
+
+
+<table id="onece" lay-filter="onece"></table>
+
+
+     <script type="text/html" id="show_wx">
+        {{#  if(d.show_wx == '0'){ }}
+        <a class="layui-btn layui-btn-xs {{d.url}}" onclick="ja(this,'{{d.url}}')">点击查看</a>
+        {{#  } else { }}
+        <a class="layui-btn layui-btn-normal layui-btn-xs">{{d.show_wx}}</a>
+        {{#  } }}
+    </script>
+
+     <script type="text/html" id="conversion_rate">
+        {{#  if(d.conversion_rate == '0'){ }}
+        <a class="layui-btn layui-btn-xs" onclick="jac(this,'{{d.url}}')">点击查看</a>
+        {{#  } else { }}
+        <a class="layui-btn layui-btn-normal layui-btn-xs">{{d.conversion_rate}}</a>
+        {{#  } }}
+    </script>
+
+    <script type="text/html" id="toor">
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">点击查看</a>
+    </script>
+<!--    <div style="width: 98%; margin: 0 auto;"> <table class="layui-hide" id="test" lay-filter="test"></table></div>-->
+
+
+
+
+
+
+
+
+
+
+
+    <script src="__STATIC__/layui/layui.js"></script>
+
+    <script>
+
+    function ja(obj,url){
+      let times = $('#test10').val();
+        $.ajax({
+          url: 'conversion_click',
+          type: 'POST',
+          dataType: 'json',
+          data:{'url':url,'times':times},
+          success:function(msg){
+           // console.log(msg);
+             $(obj).parent("div").append('<a class="layui-btn layui-btn-xs '+url+'" a2bc="'+url+'" >'+msg.data+'</a>');
+             $(obj).remove();
+          }
+        })
+     }
+
+     function percentNum(num,num2) {
+          return (Math.round(num / num2 * 10000) / 100.00 + "%"); //小数点后两位百分比
+      }
+
+     function jac(obj,url){
+       //console.log(obj);
+        //console.log(url);
+        let times = $('#test10').val();
+
+        $.ajax({
+          url: 'conversion_click_all',
+          type: 'POST',
+          dataType: 'json',
+          data:{'url':url,'times':times},
+          success:function(msg){
+             //console.log(msg);
+            //console.log(msg.data.allshow/msg.data.wxshow);
+           // console.log(percentNum(msg.data.allshow,msg.data.wxshow));
+             $(obj).parent("div").append('<a class="layui-btn layui-btn-xs">'+percentNum(msg.data.allshow,msg.data.wxshow)+'</a>');
+             $(obj).remove();
+           
+          }
+        })
+     }
+
+    function ali_ajax(url_time){
+        var result ='';
+        $.ajax({
+            url: 'floor_data',
+            type: 'POST',
+            dataType: 'json',
+            data: url_time,
+          
+            success:function(res){
+                // console.log(res);
+                 result = res.data;
+            }
+        });
+         return result;
+     };
+
+
+     
+
+
+        layui.use(['laydate','table','jquery'],function () {
+            var $ = layui.$ //重点处
+            var laydate=layui.laydate;
+            var table = layui.table;
+            //日期时间范围
+            laydate.render({
+                elem: '#test10'
+                ,type: 'datetime'
+                ,range: true
+                ,min: -28 //7天前
+                ,max: 1 //7天后
+                ,done:function (value,date,endDate) {
+                    // $('#choose_time').val(value);
+                    //console.log(value); //得到日期生成的值，如：2017-08-18
+                    // console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
+                    // console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
+                }
+            });
+
+            var time = $('#test10').val();
+           var tableIns =  table.render({
+              elem:"#onece"
+              ,url:'conversion_rate'
+              ,method:"post"
+              ,where:{'time':$('#test10').val()}
+              ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+              ,cols:[[ 
+
+                      {field: 'url',width:400, title: '链接'}
+                      ,{field: 'flood_wx', title: '复制次数',  width:400}
+                      ,{field: 'show_wx', title: '展示次数',  templet: '#show_wx'}
+                      ,{field: 'conversion_rate', title: '转化率',  templet: '#conversion_rate'}
+                      ]]
+
+              ,page: true
+            });
+
+            $('#search').click(function(event) {
+                
+               tableIns.reload({
+                    where: {'time':$('#test10').val()}
+                  });
+
+            });
+
+            
+            
+
+
+             
+
+
+
+
+        });
+
+
+    </script>
+
+
+
+
+</body>
+</html>

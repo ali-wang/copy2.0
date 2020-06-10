@@ -1,0 +1,178 @@
+<include file="public@myheader" />
+
+<style>
+
+    .row{margin: 0px; width: 100%;}
+    .mt20{ margin-top:20px;}
+    .font{ font-size: 1.5rem;line-height: 3rem;}
+</style>
+</head>
+<body>
+
+    <div class="container">
+
+    </div>
+
+    <form action="../admin_select/select_index" method="post">
+        <div class="row mt20">
+
+            <div class="col-xs-1 text-center" style="font-size: 1.5rem; line-height: 3.0rem;">选择</div>
+
+            <div class="col-xs-4">
+                <select name="app_url" class="layui-input-inline layui-input"  style="width: 100%;">
+
+                    <if condition="$times['app_url'] eq '0'">
+
+                        <option value="0">选择一个网站</option>
+
+                        <else />
+
+                        <option value="{$times['app_url']}">{$times['app_url']}</option>
+                    </if>
+
+
+                    <volist name="url" id='vo'>
+                        <option value="{$vo}">{$vo}</option>
+                    </volist>
+
+                </select>
+            </div>
+
+            <div class="col-xs-4">
+                <div class="layui-input-inline" style="width: 100%;">
+                    <input autocomplete="off" type="text" name="time" class="layui-input" id="test10"
+                          value="{$times['choose_time']}" placeholder="yyyy-MM-dd HH:mm- yyyy-MM-dd HH:mm">
+                    <input type="hidden" name="choose_time" value="" id="choose_time">
+                </div>
+            </div>
+
+
+<!--            <div class="col-xs-2  btn btn-info" style="line-height: 24px;" type="submit">查询</div>-->
+            <input class="col-xs-2  btn btn-info" style="line-height: 24px;" type="submit" value="查询">
+
+        </div>
+    </form>
+
+    <div style="width: 98%; margin: 0 auto;"> <table class="layui-hide" id="test" lay-filter="test"></table></div>
+
+
+
+
+    <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    </script>
+
+
+     <script type="text/html" id="usertype">
+        {{#  if(d.user_type == 2){ }}
+        <a class="layui-btn layui-btn-xs">点击</a>
+        {{#  } }}
+
+        {{#  if(d.user_type == 3){ }}
+           <a class="layui-btn layui-btn-warm layui-btn-xs">识别</a>
+        {{#  } }}
+
+        {{#  if(d.user_type == 1){ }}
+        <a class="layui-btn layui-btn-normal layui-btn-xs">复制</a>
+        {{#  } }}
+    </script>
+
+
+
+    <script src="__STATIC__/layui/layui.js"></script>
+
+    <script>
+        console.log({$times1});
+        layui.use(['laydate','table'],function () {
+            var laydate=layui.laydate;
+            var table = layui.table;
+            //日期时间范围
+            laydate.render({
+                elem: '#test10'
+                ,type: 'datetime'
+                ,range: true
+                ,min: -28 //7天前
+                ,max: 1 //7天后
+                ,done:function (value,date,endDate) {
+                    $('#choose_time').val(value);
+                    // console.log(value); //得到日期生成的值，如：2017-08-18
+                    // console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
+                    // console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
+                }
+            });
+
+            table.render({
+                elem: '#test'
+                ,url:'select_index'
+                ,where: {id: 123}
+                ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+                ,limit:20
+                ,method:'get'
+                ,title: '用户数据表'
+                ,cols: [[
+
+
+                    {field:'id', title:'ID', width:80, fixed: 'left', unresize: true, sort: true,hide:false}
+                    ,{field:'location', title:'链接', width:300, sort: true}
+                    ,{field:'copy_content', title:'复制词', width:150, sort: true}
+                    ,{field:'sourceType', title:'平台', width:80, sort: true}
+                    ,{field:'stop', title:'浏览时间(秒)', width:120, sort: true}
+                    ,{field:'equipment', title:'设备', width:100, sort: true}
+                    ,{field:'user_type', title:'方式', width:70, templet:'#usertype'}
+                    ,{field:'region', title:'省份', width:120}
+                    ,{field:'city', title:'城市', width:120}
+                    ,{field:'user_ip', title:'IP', width:150}
+                    ,{field:'time', title:'时间', width:180}
+                    ,{field:'souword', title:'搜索词', width:250, sort: true}
+                    ,{field:'utm_term', title:'关键字', width:120, sort: true}
+                    ,{field:'utm_content', title:'单元', width:120, sort: true}
+                    ,{field:'utm_medium', title:'计划', width:120, sort: true}
+                    ,{fixed: 'right', title:'操作', toolbar: '#barDemo', width:80}
+                ]]
+                ,page: true
+            });
+
+            //监听行工具事件
+            table.on('tool(test)', function(obj){
+                var data = obj.data;
+                //console.log(obj)
+                if(obj.event === 'del'){
+                    layer.confirm('真的删除该条数据吗？', function(index){
+                        console.log(obj.data.id);
+                        var id = obj.data.id;
+                       $.ajax({
+                           url: '../admin_deledata/showdata_del',
+                           type: 'POST',
+                           datatype: 'json',
+                           data: {'id': id},
+                           success:function(msg){
+                               if(msg.msg){
+                                   obj.del();
+                                   layer.close(index);
+                                   layer.open({
+                                       title: 'message'
+                                       ,content: '删除成功'
+                                       ,anim: 4
+                                       ,time:1000
+                                   });
+                               }else{
+                                   layer.open({
+                                       title: 'message'
+                                       ,content: '删除失败'
+                                       ,anim: 6
+                                       ,time:1000
+                                   });
+                               }
+
+                           }
+                       })
+                    });
+                }
+            });
+
+        });
+    </script>
+
+
+</body>
+</html>

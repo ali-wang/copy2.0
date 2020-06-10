@@ -1,0 +1,340 @@
+<include file="public@myheader" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" crossorigin="anonymous">
+<body style="margin: 0% 2%; font-size: 1.8rem;">
+<style>
+    .btn{font-size: 1.6rem}
+</style>
+
+<div style="margin-top: 40px; margin-bottom: 20px;"><button type="button" class="btn btn-info myaddgroup">添加分组</button></div>
+    <div class="accordion" id="accordionExample">
+        <volist name="mywxdata" id="vo" key="k">
+            <div class="card" id="myg_{$vo['groupId']}" data-id="{$vo['groupId']}" onclick="mysession({$vo['groupId']})">
+                <div class="card-header" id="headingOne">
+                    <h2 class="mb-0">
+                        <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse_{$vo['groupId']}" aria-expanded="true" aria-controls="collapse_{$vo['groupId']}">
+                            微信组名称： {$vo["groupName"]}
+                        </button>
+
+                    </h2>
+                </div>
+
+                <div id="collapse_{$vo['groupId']}" class="collapse" aria-labelledby="heading_{$k}" data-parent="#accordionExample">
+                    <div class="card-body">
+
+                        <empty name="vo['wxdata']">
+
+                            <div class="col-sm-4">
+                                <button type="button" class="btn btn-success myaddwx"  data-id="{$vo['groupId']}">添加微信</button>
+                                <button type="button" class="btn btn-danger delgroup"  data-id="{$vo['groupId']}">删除分组</button>
+
+                            </div>
+
+                            <br/>
+
+                            <br>
+
+                            <div>暂无数据，请添加微信号</div>
+
+                            <else />
+
+                                <div class="card card-body">
+                                    <div class="col-sm-6">
+                                        <button type="button" class="btn btn-success myaddwx" data-id="{$vo['groupId']}">添加微信</button>
+                                        <button type="button" class="btn btn-success getwx" data-id="{$vo['groupId']}">获取微信调用链接</button>
+                                        <button type="button" class="btn btn-danger  delgroup" data-id="{$vo['groupId']}">删除分组</button>
+                                    </div>
+
+                                    <br>
+
+                                    <table class="table">
+                                        <thead class="thead-dark">
+                                        <tr>
+                                            <th scope="col">编号</th>
+                                            <th scope="col">名称</th>
+                                            <th scope="col">微信号</th>
+                                            <th scope="col">二维码</th>
+                                            <th scope="col">操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+
+
+
+                                            <volist name="vo['wxdata']" id="wx" key="key">
+                                                <tr id="my_{$wx['id']}">
+                                                    <th scope="row">{$key}</th>
+                                                    <td>{$wx['name']}</td>
+                                                    <td>{$wx['number']}</td>
+                                                    <td>{$wx['imgurl']}</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-primary myeditwx" data-id="{$wx['id']}">修改</button>
+                                                        <button type="button" class="btn btn-danger mydelewx" data-id="{$wx['id']}">删除</button>
+                                                    </td>
+                                                </tr>
+                                            </volist>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                        </empty>
+                    </div>
+                </div>
+            </div>
+        </volist>
+
+    </div>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+<script src="__STATIC__/layui/layui.js"></script>
+<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+<script>
+
+    if (!sessionStorage.getItem('my')) {
+        sessionStorage.setItem('my',1);
+    }
+    $("#collapse_"+sessionStorage.getItem('my')).addClass("collapse in show");
+    function mysession(id) {
+        sessionStorage.setItem('my',id);
+    }
+</script>
+    <script>
+        layui.use('layer',function () {
+            var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+            var active ={
+                //添加
+                addwxmethod:function (id) {
+                    // alert(id);
+                    var that = this;
+                    //多窗口模式，层叠置顶
+                    layer.open({
+                        type: 2 //此处以iframe举例
+                        ,title: '添加微信'
+                        ,area: ['500px', '500px']
+                        ,shade: 0
+                        ,maxmin: true
+                        ,offset: [ //为了演示，随机坐标
+                            $(window).height()/4,
+                            $(window).width()/4
+                        ]
+                        ,content: 'addWx?edit=0&gid='+id
+                        ,btn: ['确定'] //只是为了演示
+                        ,yes: function(){
+                            document.location.reload();
+                        }
+                        ,zIndex: layer.zIndex //重点1
+                        ,success: function(layero){
+                            layer.setTop(layero); //重点2
+                        }
+                    });
+                },
+                //编辑
+                myeditwx:function(id) {
+                    // alert(id);
+                    var that = this;
+                    //多窗口模式，层叠置顶
+                    layer.open({
+                        type: 2 //此处以iframe举例
+                        ,title: '添加微信'
+                        ,area: ['500px', '500px']
+                        ,shade: 0
+                        ,maxmin: true
+                        ,offset: [ //为了演示，随机坐标
+                            $(window).height()/4,
+                            $(window).width()/4
+                        ]
+                        ,content: 'addWx?edit=1&gid='+id
+                        // ,method:PUT
+                        ,btn: ['关闭'] //只是为了演示
+                        ,yes: function(){
+                            document.location.reload();
+                            // $(that).click();
+                        }
+
+
+                        ,zIndex: layer.zIndex //重点1
+                        ,success: function(layero){
+                            layer.setTop(layero); //重点2
+                        }
+                    });
+                },
+                //删除
+                mydelewx:function (id) {
+                    var that = this;
+                    layer.msg('你确定要删除该微信号？？', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['确定删除', '取消'],
+                        yes: function(){
+                            $.ajax({
+                                url:"addWx",
+                                type:"Delete",
+                                dataType:"json",
+                                data:{"id":id},
+                                success:function (msg) {
+
+                                    console.log(msg.code);
+                                    if (msg.code == 200){
+                                        $("#my_"+id).fadeOut("slow");
+                                        layer.msg('删除成功');
+                                        // document.location.reload();
+                                    }
+                                }
+                            })
+                        },
+                        btn2: function(){
+                        layer.closeAll();
+                     }
+                    });
+
+                },
+                //添加分组
+                myaddgroup:function () {
+                    layer.open({
+                        type: 2 //此处以iframe举例
+                        ,title: '添加分组'
+                        ,area: ['500px', '500px']
+                        ,shade: 0
+                        ,maxmin: true
+                        ,offset: [ //为了演示，随机坐标
+                            $(window).height()/4,
+                            $(window).width()/4
+                        ]
+                        ,content: 'saveGroup'
+                        // ,method:PUT
+                        ,btn: ['确认'] //只是为了演示
+                        ,yes: function(){
+                            document.location.reload();
+                            // $(that).click();
+                        }
+
+
+                        ,zIndex: layer.zIndex //重点1
+                        ,success: function(layero){
+                            layer.setTop(layero); //重点2
+                        }
+                    });
+                },
+                //删除分组
+                delgroup:function (id) {
+                    var that = this;
+                    layer.msg('确定要删除分组，该分组的微信号都将被删除', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['确定删除', '取消'],
+                        yes: function(){
+                            $.ajax({
+                                url:"saveGroup",
+                                type:"Delete",
+                                dataType:"json",
+                                data:{"id":id},
+                                success:function (msg) {
+
+                                    console.log(msg.code);
+                                    console.log(id);
+                                    if (msg.code == 200){
+                                        $("#myg_"+id).fadeOut("slow");
+                                        layer.msg('删除成功');
+                                        // document.location.reload();
+                                    }
+                                }
+                            })
+                        },
+                        btn2: function(){
+                            layer.closeAll();
+                        }
+                    });
+
+                },
+
+                //获取调用js
+                getwx:function (id) {
+                    layer.open({
+                        type: 2 //此处以iframe举例
+                        ,title: '添加分组'
+                        ,area: ['800px', '500px']
+                        ,shade: 0
+                        ,maxmin: true
+                        ,offset: [ //为了演示，随机坐标
+                            $(window).height()/4,
+                            $(window).width()/4
+                        ]
+                        ,content: 'getWxjs?id='+id
+                        // ,method:PUT
+                        ,btn: ['关闭'] //只是为了演示
+                        ,yes: function(){
+                            layer.closeAll();
+                            // document.location.reload();
+                            // $(that).click();
+                        }
+
+
+                        ,zIndex: layer.zIndex //重点1
+                        ,success: function(layero){
+                            layer.setTop(layero); //重点2
+                        }
+                    });
+                },
+            };
+
+
+            //添加微信
+            $('.myaddwx').on('click', function(){
+                var othis = $(this), id = othis.data('id');
+                active["addwxmethod"].call(this, id);
+                // alert(id);
+            });
+            //编辑微信
+            $('.myeditwx').on('click', function(){
+                var othis = $(this), id = othis.data('id');
+                active["myeditwx"].call(this, id);
+                // alert(id);
+            });
+            //删除微信
+            $('.mydelewx').on('click', function(){
+                var othis = $(this), id = othis.data('id');
+                console.log(othis);
+                active["mydelewx"].call(this, id);
+
+                // alert(id);
+            });
+            //添加分组
+            $('.myaddgroup').on('click',function () {
+                active["myaddgroup"].call(this);
+            });
+            //删除分组
+            //删除微信
+            $('.delgroup').on('click', function(){
+                var othis = $(this), id = othis.data('id');
+                console.log(othis);
+                active["delgroup"].call(this, id);
+
+                // alert(id);
+            });
+            //获取js调用getwx
+            $('.getwx').on('click', function(){
+                var othis = $(this), id = othis.data('id');
+                console.log(othis);
+                active["getwx"].call(this, id);
+
+                // alert(id);
+            });
+
+        });
+
+
+
+    </script>
+
+<script>
+
+</script>
+
+
+
+</body>
+</html>

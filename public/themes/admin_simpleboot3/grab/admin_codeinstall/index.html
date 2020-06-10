@@ -1,0 +1,149 @@
+<include file="public@myheader" />
+
+<style>
+
+    .row{margin: 0px; width: 100%;}
+    .mt20{ margin-top:20px;}
+    .font{ font-size: 1.5rem;line-height: 3rem;}
+</style>
+</head>
+<body>
+  <p style="margin:30px 15px;">安装说明:</p>
+  <p>使用时间：<kbd>{$numdata.btime}至{$numdata.etime}</kbd></p>
+    <div class="layui-form-item layui-form-text">
+      <p style="margin:15px 15px;color: red; text-indent: 7rem;">请先配置域名,否则系统无法正常统计,授权域名之间请用<kbd>,</kbd>隔开，直接输入域名，不要添加<kbd>http或者https</kbd>等,您最多能授权<kbd>{$numdata.donum}</kbd>个域名,如特殊需求请联系客服。</p>
+      <label class="layui-form-label" style="width:100px;">域名授权</label>
+      <div class="layui-input-block" style="width:70%">
+        <textarea id="domiantext" cols='60' rows='10' placeholder="例如：www.baidu.com,tj.a2bc.com" class="layui-textarea" name="desc" value="" style="margin-top: 0px; margin-bottom: 0px; height: 100px;"></textarea>
+        <input type="hidden" name='id' id='userid' value='{$numdata.id}'>
+
+        <div id="btns" class="layui-btn layui-btn-sm layui-btn-radius" style="margin-top:20px;">保存域名</div>
+      </div>
+    </div>
+
+
+    <div class="layui-form-item layui-form-text">
+      <p style="margin:15px 15px;color: red; text-indent: 7rem;">首先授权需要抓取信息的域名，然后将统计代码添加到<kbd> < /body ></kbd>之前保存。如果不能获取或者特殊需求请联系客服。</p>
+      <label class="layui-form-label" style="width:100px;">统计代码:</label>
+      <div class="layui-input-block" style="width:70%">
+        <textarea placeholder="例如：www.baidu.com,tj.a2bc.com" class="layui-textarea" name="desc" value="" style="margin-top: 0px; margin-bottom: 0px; height: 100px;">{$numdata.str}</textarea>
+      </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+      <p style="margin:15px 15px;color: red; text-indent: 7rem;">解析户需要获取<kbd>计划,单元,关键字</kbd>需要有如下操作。如果不能获取请联系客服。</p>
+      <label class="layui-form-label" style="width:100px;">绑定参数</label>
+      <div class="layui-input-block" style="width:70%">
+        
+              
+               <h2>参数规则</h23>
+					<h3>1 、倍增，抓取长按识别二维码 </h3>
+					
+					<p style="line-height:30px;">第一步：需要给放置二维码的标签添加<kbd>class=“whimg”</kbd>，如果图片标签已经存在class，则可直接添加在class内。</p>
+					<p style="line-height:30px;">第二步：如果你的微信号调用时‘stxlwx’则不用以下操作</p>
+					<p style="line-height:30px;">例如：你的单个微信号展示是‘<kbd>var mywx= arr_wx[wx_index];</kbd>’那么在你这句代码下面添加一句“<kbd>var stxlwx=mywx; </kbd>”</p>
+                  <h3>2、平台参数可参考设置baidu,360,sogou,sm等</h3>
+                  <p style="line-height:30px;"><kbd>utm_medium</kbd>  计划</p>
+                  <p style="line-height:30px;"><kbd>utm_content</kbd>单元 </p>
+                 <p style="line-height:30px;"><kbd> utm_term</kbd>关键词</p>
+            <div class="col-md-10" ><img style="width:100%; display: block;" src="__STATIC__/myimg/show.png" alt=""></div>
+                         
+      </div>
+    </div>
+
+
+
+  <script src="__STATIC__/layui/layui.js"></script>
+    <script>
+        $(function(){
+          var urls= {$numdata.domain};
+          $('#domiantext').val(urls);
+        })
+        
+         function isRepeat(arr){
+                var hash = {};
+            for(var i in arr) {
+                if(hash[arr[i]])
+                return true;
+                 hash[arr[i]] = true;
+            }
+            return false;
+            }
+
+         function yumings(){
+            //域名提交，除去空格、回车。将中文逗号转换成英文逗号
+            var text1 = $("#domiantext").val().replace(/[\r\n]/g,"").replace(/\ +/g,"").replace(/，/ig,',');
+            var text2  =text1.replace(",,",",");
+            var str  =text2.replace(",,",",");
+            var text = (str.substring(str.length - 1) == ',') ? str.substring(0, str.length - 1) : str;
+            var ary = text.split(',');
+            var flge = isRepeat(ary);
+            // console.log(flge);
+            if(!flge){
+              return ary;
+            }else{
+              return false;
+            }
+           
+        } 
+
+        function ajaxs(da){
+          let res='';
+          console.log(da);
+          $.ajax({
+            url: 'savedomain',
+            type: 'POST',
+            dataType: 'json',
+            data: da,
+            success:function(msg){
+              console.log(msg);
+
+            }
+          });
+          return res;
+        }
+
+        layui.use(['laydate','table'],function(){
+            var laydate=layui.laydate;
+            var table = layui.table;
+            $('#btns').click(function(event) {
+
+
+                var domain={};
+
+                 domain.url= yumings();
+
+                if(!domain.url){
+                   layer.alert('存在相同授权域名，请检查！', {
+                            skin: 'layui-layer-molv' //样式类名
+                            ,closeBtn: 0
+                          });
+                   return;
+                }
+
+                if(domain.url.length > {$numdata.donum}){
+                  layer.alert('已超出授权域名个数，请联系客服或删除不用域名！', {
+                            skin: 'layui-layer-molv' //样式类名
+                            ,closeBtn: 0
+                          });
+                   return;
+                }
+              domain.id = $('#userid').val();
+              var flge =ajaxs(domain);
+              if(flge.code='1'){
+                 layer.alert('授权成功！', {icon: 1});
+
+              }else{
+                 layer.alert('授权失败~.~！', {icon: 5});
+              }
+
+
+
+            });
+
+        });
+
+    </script>
+
+</body>
+</html>

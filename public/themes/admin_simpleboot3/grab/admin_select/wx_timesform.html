@@ -1,0 +1,287 @@
+<include file="public@myheader" />
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<style>
+
+    .row{margin: 0px; width: 100%;}
+    .mt20{ margin-top:20px;}
+    .font{ font-size: 1.5rem;line-height: 3rem;}
+</style>
+</head>
+<body>
+
+
+
+<!--    <h2>查询下载数据</h2>-->
+
+    <form>
+        <div class="row mt20">
+
+            <div class="col-xs-1 text-center" style="font-size: 1.5rem; line-height: 3.0rem;">选择</div>
+
+            <div class="col-xs-4">
+                <select name="app_url" class="layui-input-inline layui-input" id="url" style="width: 100%;">
+                    <option value="0">选择一个网站</option>
+
+                    <volist name="url" id='vo'>
+                        <option value="{$vo}">{$vo}</option>
+                    </volist>
+
+                </select>
+            </div>
+
+            <div class="col-xs-4" style="display:none;">
+                <div class="layui-input-inline" style="width: 100%;">
+                    <input autocomplete="off" type="text" name="time" class="layui-input" id="test10"
+                          value="" placeholder="yyyy-MM-dd HH:mm- yyyy-MM-dd HH:mm">
+                    <!-- <input type="hidden" name="choose_time" value="" id="choose_time"> -->
+                </div>
+            </div>
+
+            <input class="col-xs-2  btn btn-info" style="line-height: 24px;" type="" id="search" value="查询">
+
+        </div>
+    </form>
+
+
+<table id="demo" lay-filter="demo"></table>
+
+<h3 class="text-center" style="margin-top: 30px; display: block;"> 仅限于最近24小时查询</h3>
+<div  id="app" class="bs-example"   style="margin-top: 30px; display: block;">
+    <div class="panel panel-default" style="overflow: scroll;">
+     
+      <table class="table">
+
+        <thead>
+          <tr>
+            <th></th>
+            <th class="text-center" style="max-width: 120px; overflow:hidden;" v-for="(value, key, index) in wxdata">
+                
+                   {{value}}
+                
+            </th>
+            <!-- <th>First Name</th>
+            <th>Last Name</th>
+            <th>Username</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Username</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Username</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Username</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Username</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Username</th> -->
+          </tr>
+        </thead>
+        <tbody>
+
+         <!--  <tr>
+            <td v-for="(value, key, index) in mydata">
+             <span v-for="(val, k) in value">
+                    {{k}}--{{val}}
+             </span>
+            </td>
+          </tr> -->
+
+            <tr class="text-center" v-for="(value, key, index) in mydata"> 
+               <th>{{ key }}</th>
+            <td class="text-center" v-for="(val, k) in value">
+                    {{val}}
+            </td>
+          </tr>
+         
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+
+
+<!--    <div style="width: 98%; margin: 0 auto;"> <table class="layui-hide" id="test" lay-filter="test"></table></div>-->
+
+
+
+
+
+
+
+
+
+
+
+    <script src="__STATIC__/layui/layui.js"></script>
+
+    <script>
+
+  
+    function showtab(res){
+        if(res.code=='0'){
+            $('.container').css('display','block');
+
+            if(res.data.data.url=='0'){
+                res.data.data.url="全部";
+            }
+            if(res.count=='0'){
+                $('#btn_download').css('display','none');
+                $('#fcount').css('background','red');
+                $('#titles').removeClass('panel-success').addClass('panel-danger');
+
+
+            }else{
+                $('#btn_download').css('display','block');
+                $('#fcount').css('background','#fff');
+                $('#titles').removeClass('panel-danger').addClass('panel-success');
+            }
+
+            $('#furl').text(res.data.data.url);
+            $('#ftime').text(res.data.data.chose_time);
+            $('#fcount').text(res.count);
+            $('#fname').text(res.data.time);
+        }
+    }
+
+   
+
+    function ali_ajax(url_time){
+        var result ='';
+        $.ajax({
+            url: 'wx_timesform',
+            type: 'POST',
+            datatype: 'json',
+            async : false,
+            data: url_time,
+            success:function(res){
+                // console.log(res);
+                 result = res.data;
+            }
+        });
+         return result;
+     };
+
+     
+
+        
+
+
+
+
+        layui.use(['laydate','table'],function () {
+            var laydate=layui.laydate;
+            var table = layui.table;
+            //日期时间范围
+            laydate.render({
+                elem: '#test10'
+                ,type: 'datetime'
+                ,range: true
+                ,min: -28 //7天前
+                ,max: 1 //7天后
+                ,done:function (value,date,endDate) {
+                    $('#choose_time').val(value);
+                    // console.log(value); //得到日期生成的值，如：2017-08-18
+                    // console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
+                    // console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
+                }
+            });
+
+            $('#search').click(function(event) {
+                var arr={};
+                arr.app_url = $('#url').val();
+                 if(arr.app_url == '0'){
+                    layer.alert('请选择要查询的链接', {
+                          skin: 'layui-layer-molv' //样式类名
+                          ,closeBtn: 0
+                        });
+                    return;
+                }
+                arr.time = $('#test10').val();
+                // var abc = ali_ajax(arr);
+                // console.log(abc);  
+                //第一个实例
+                  // table.render({
+                  //   elem: '#demo'
+                  //   ,method:'post'
+                  //   ,url:'wx_timesform'
+                  //   ,where:arr
+                  //   ,page: true //开启分页
+                  //   ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+                  //   ,title: '微信复制次数'
+                  //   ,cols: [[ //表头
+                  //     {type: 'numbers', title: 'ID', width:80, fixed: 'left'}
+                  //     ,{field: 'wx', title: '微信号', width:200}
+                  //     ,{field: 'num', title: '数量',  sort: true}
+                     
+                  //   ]]
+                  //    ,page: true
+                  // });
+
+                  $.ajax({
+                      url: 'wx_timesform',
+                      type: 'POST',
+                      dataType: 'json',
+                      data:arr,
+                      success:function(msg){
+                        // console.log(msg);
+                        // location.reload();
+                        if(msg.data.length == 0 ){
+                            layer.msg('暂无数据'); 
+                            return;
+                        }
+                         var app = new Vue({
+                              el: '#app',
+                              data: {
+                                message: 'Hello Vue!',
+                                mydata:msg.data,
+                                wxdata:msg.count
+                              },
+                              method:{
+
+                              }
+                            });
+                      }
+                  })
+                  // .done(function(msg1) {
+                  //     console.log(msg1);
+
+                  //    var app = new Vue({
+                  //             el: '#app',
+                  //             data: {
+                  //               message: 'Hello Vue!',
+                  //               mydata:msg1.data,
+                  //               wxdata:msg1.count
+                  //             },
+                  //             method:{
+
+                  //             }
+                  //           });
+
+                  // });
+                  
+
+                 
+
+                  
+
+
+             });
+
+
+
+
+        });
+
+
+    </script>
+
+
+
+
+</body>
+</html>
